@@ -18,7 +18,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 宣言と初期化
 	//======================================================
 
-	
+	const int kRowHeight = 18;
+
+	Vector3 v1{ 1.0f,3.0f,-5.0f };
+	Vector3 v2{ 4.0f,-1.0f,2.0f };
+	float k = 4.0f;
+
+	Vector3 resultAdd = Add(v1, v2);
+	Vector3 resultSubtract = Subtract(v1, v2);
+	Vector3 resultMultiply = Multiply(v1, k);
+	float resultDot = Dot(v1, v2);
+	float resultLength = Length(v1);
+	Vector3 resultNormalize = Normalize(v2);
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -40,7 +52,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		
+		VectorScreenPrintf(0, 0, resultAdd, " : Add");
+		VectorScreenPrintf(0, kRowHeight, resultSubtract, " : Subtract");
+		VectorScreenPrintf(0, kRowHeight * 2, resultMultiply, " : Multiply");
+		Novice::ScreenPrintf(0, kRowHeight * 3, "%.02f : Dot", resultDot);
+		Novice::ScreenPrintf(0, kRowHeight * 4, "%.02f : Length", resultLength);
+		VectorScreenPrintf(0, kRowHeight * 5, resultNormalize, " : Normalize");
 
 		///
 		/// ↑描画処理ここまで
