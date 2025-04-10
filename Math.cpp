@@ -48,6 +48,26 @@ Vector3 Min(Vector3 pos1, Vector3 pos2) {
 	return Vector3(std::min(pos1.x, pos2.x), std::min(pos1.y, pos2.y), std::min(pos1.z, pos2.z));
 }
 
+Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
+	Matrix4x4 result;
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.m[i][j] = m1.m[i][j] + m2.m[i][j];
+		}
+	}
+	return result;
+}
+
+Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) {
+	Matrix4x4 result;
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.m[i][j] = m1.m[i][j] - m2.m[i][j];
+		}
+	}
+	return result;
+}
+
 Matrix4x4 Multiply(const Matrix4x4& matrix1, const Matrix4x4& matrix2) {
 	Matrix4x4 result;
 	for (int i = 0; i < 4; ++i) {
@@ -59,6 +79,25 @@ Matrix4x4 Multiply(const Matrix4x4& matrix1, const Matrix4x4& matrix2) {
 		}
 	}
 	return result;
+}
+
+Matrix4x4 Transpose(const Matrix4x4& m) {
+	Matrix4x4 result;
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.m[i][j] = m.m[j][i];
+		}
+	}
+	return result;
+}
+
+Matrix4x4 MakeIdentity4x4() {
+	Matrix4x4 identity = {};
+	for (int i = 0; i < 4; ++i) {
+		// 対角成分を1に設定
+		identity.m[i][i] = 1.0f;
+	}
+	return identity;
 }
 
 Matrix4x4 MakeRotateXMatrix(const float& theta) {
@@ -138,7 +177,7 @@ Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	return result;
 }
 
-Matrix4x4 InverseMatrix(const Matrix4x4& matrix) {
+Matrix4x4 Inverse(const Matrix4x4& matrix) {
 	Matrix4x4 result;
 	float det = matrix.m[0][0] * matrix.m[1][1] * matrix.m[2][2] * matrix.m[3][3] +
 		matrix.m[0][0] * matrix.m[1][2] * matrix.m[2][3] * matrix.m[3][1] +
