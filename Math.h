@@ -21,7 +21,7 @@ Vector3 Normalize(const Vector3& v);
 float Dot(const Vector3& v1, const Vector3& v2);
 
 // 外積
-Vector3 Cross(const Vector3& pos1, const Vector3& pos2);
+Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
 // 最大値
 Vector3 Max(Vector3 pos1, Vector3 pos2);
