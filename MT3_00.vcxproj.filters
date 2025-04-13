@@ -29,6 +29,12 @@
     <ClCompile Include="Math.cpp">
       <Filter>ソースファイル</Filter>
     </ClCompile>
+    <ClCompile Include="DrawObject3d.cpp">
+      <Filter>ソースファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>ソースファイル</Filter>
+    </ClCompile>
     <ClCompile Include="DrawScreenPrintf.cpp">
       <Filter>ソースファイル</Filter>
     </ClCompile>
@@ -121,6 +127,12 @@
       <Filter>ヘッダファイル</Filter>
     </ClInclude>
     <ClInclude Include="DrawScreenPrintf.h">
+      <Filter>ヘッダファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawObject3d.h">
+      <Filter>ヘッダファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
       <Filter>ヘッダファイル</Filter>
     </ClInclude>
   </ItemGroup>
