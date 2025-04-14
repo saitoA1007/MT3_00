@@ -1,7 +1,7 @@
 #pragma once
 #include"Matrix4x4.h"
 #include"Vector3.h"
-#include"DrawObject3d.h"
+#include"Geometry.h"
 
 // 加算
 Vector3 Add(const Vector3& v1, const Vector3& v2);
@@ -28,8 +28,9 @@ Vector3 Max(Vector3 pos1, Vector3 pos2);
 // 最小値
 Vector3 Min(Vector3 pos1, Vector3 pos2);
 
+// 正射影ベクトル
 Vector3 Project(const Vector3& v1, const Vector3& v2);
-
+// 最近接点
 Vector3 ClosestPoint(const Vector3& point,const Segment& segment);
 
 // 4x4行列の加法

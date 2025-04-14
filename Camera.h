@@ -2,6 +2,7 @@
 #include"Vector3.h"
 #include"Matrix4x4.h"
 #include <stdint.h>
+#include"InPutProcess.h"
 
 class Camera {
 public:
@@ -39,7 +40,7 @@ public:
 #ifdef _DEBUG
 
 	// カメラのデバック
-	void DrawCameraDebugWindow();
+	void DrawCameraDebugWindow(InPut& input);
 
 #endif 
 
@@ -65,4 +66,9 @@ private:
 	Vector3 ndcVertex_;
 	// VPMatrix
 	Matrix4x4 viewProjectionMatrix_;
+
+	Matrix4x4 transMatrix_;
+	Matrix4x4 rotateMatrix_;
+	Matrix4x4 scaleMatrix_;
+
 };
