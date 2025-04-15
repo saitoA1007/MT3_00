@@ -63,9 +63,24 @@ Vector3 Camera::TransScreen(Vector3 worldPos) {
 void Camera::DrawCameraDebugWindow(InPut& input) {
 	// カメラのデバック
 	ImGui::Begin("DebugCameraWindow");
-	ImGui::DragFloat3("cameraPos", &cameraPos_.x, 0.01f);
-	ImGui::DragFloat3("cameraRotate", &cameraRotate_.x, 0.01f);
-	ImGui::DragFloat3("cameraScale", &cameraScale_.x, 0.01f);
+	ImGui::DragFloat3("cameraPos", &cameraPos_.x, 0.02f);
+	ImGui::DragFloat3("cameraRotate", &cameraRotate_.x, 0.02f);
+	ImGui::DragFloat3("cameraScale", &cameraScale_.x, 0.02f);
+	// カメラをリセット
+	if (ImGui::Button("Reset")) {
+		// カメラの位置をリセット
+		cameraPos_ = { 0.0f, 0.0f, -6.49f };
+		cameraRotate_ = { 0.26f,0.0f,0.0f };
+		cameraScale_ = { 1.0f,1.0f,1.0f };
+		// SRTMatrixの更新処理
+		transMatrix_ = MakeTranslateMatrix(cameraPos_);
+		rotateMatrix_ = Multiply(MakeRotateXMatrix(cameraRotate_.x), Multiply(MakeRotateYMatrix(cameraRotate_.y), MakeRotateZMatrix(cameraRotate_.z)));
+		scaleMatrix_ = MakeScaleMatrix(cameraScale_);
+		// カメラの変更した内容を適用する処理
+		cameraWorldMatrix_ = Multiply(transMatrix_, Multiply(scaleMatrix_, rotateMatrix_));
+		viewMatrix_ = Inverse(cameraWorldMatrix_);
+		viewProjectionMatrix_ = Multiply(viewMatrix_, projectionMatrix_);
+	}
 	ImGui::End();
 
 	// ImGuiが操作されていないときにカメラの操作可能

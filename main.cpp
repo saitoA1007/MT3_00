@@ -26,15 +26,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// キー入力結果を受け取る箱
 	InPut input;
 
-	// カメラのクラス
-	Camera camera = Camera({ 1.0f,1.0f,1.0f }, {0.26f,0.0f,0.0f}, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
+	// カメラ
+	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 
-	// 球の描画
-	Sphere sphere[2] = {
-		{{0.0f,0.0f,0.0f},0.5f},
-		{1.0f,0.0f,1.0f,0.2f}
-	};
+	// 平面
+	Plane plane{ {0.0f,1.0f,0.0f},1.0f };
 
+	// 球
+	Sphere sphere{{ 0.0f,0.0f,0.0f }, 0.5f};
 	// 当たり判定のフラグ
 	bool isSphereHit = false;
 
@@ -55,16 +54,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		camera.DrawCameraDebugWindow(input);
 
 		ImGui::Begin("DebugWindow");
-		ImGui::DragFloat3("sphere[0].center", &sphere[0].center.x, 0.01f);
-		ImGui::DragFloat("sphere[0].radius", &sphere[0].radius, 0.01f);
-		ImGui::DragFloat3("sphere[1].center", &sphere[1].center.x, 0.01f);
-		ImGui::DragFloat("sphere[1].radius", &sphere[1].radius, 0.01f);
+		ImGui::DragFloat3("sphere[0].center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("sphere[0].radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("plane.normal", &plane.normal.x, 0.01f);
+		ImGui::DragFloat("plane.distance", &plane.distance, 0.01f);
+		plane.normal = Normalize(plane.normal);
 		ImGui::End();
 
 #endif 
 
-		// 球同士の衝突判定の処理
-		isSphereHit = IsCollision(sphere[0], sphere[1]);
+		// 球と平面の衝突判定の処理
+		isSphereHit = IsCollision(sphere, plane);
 
 		///
 		/// ↑更新処理ここまで
@@ -77,13 +77,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter());
 
-		// 点を描画
+		// 平面を描画
+		DrawObject3D::DrawPlane(plane, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+
+		// 球を描画
 		if (isSphereHit) {
-			DrawObject3D::DrawSphere(sphere[0], camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
+			DrawObject3D::DrawSphere(sphere, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
 		} else {
-			DrawObject3D::DrawSphere(sphere[0], camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+			DrawObject3D::DrawSphere(sphere, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 		}
-		DrawObject3D::DrawSphere(sphere[1], camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 			
 		///
 		/// ↑描画処理ここまで

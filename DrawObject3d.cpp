@@ -70,6 +70,28 @@ void DrawObject3D::DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4
 	}
 }
 
+void DrawObject3D::DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 center = Multiply(plane.normal, plane.distance); // 中心点を決める
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = Normalize(Perpendicular(plane.normal)); // 法線と垂直なベクトルを求める
+	perpendiculars[1] = { -perpendiculars[0].x,-perpendiculars[0].y,-perpendiculars[0].z }; // 逆ベクトルを求める
+	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]); // 法線とのクロス積を求める
+	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z }; // 逆ベクトルを求める
+	// 各ベクトルに中心点にそれぞれ定数倍して足し、頂点を作る
+	Vector3 points[4];
+	for (int32_t i = 0; i < 4; ++i) {
+		Vector3 extend = Multiply(perpendiculars[i],2.0f);
+		Vector3 point = center + extend;
+		points[i] = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+
+	//// pointsを結び矩形を描画
+	Novice::DrawLine(static_cast<int>(points[0].x), static_cast<int>(points[0].y), static_cast<int>(points[2].x), static_cast<int>(points[2].y), color);
+	Novice::DrawLine(static_cast<int>(points[1].x), static_cast<int>(points[1].y), static_cast<int>(points[2].x), static_cast<int>(points[2].y), color);
+	Novice::DrawLine(static_cast<int>(points[1].x), static_cast<int>(points[1].y), static_cast<int>(points[3].x), static_cast<int>(points[3].y), color);
+	Novice::DrawLine(static_cast<int>(points[3].x), static_cast<int>(points[3].y), static_cast<int>(points[0].x), static_cast<int>(points[0].y), color);
+}
+
 void DrawObject3D::DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 
 	// 分割数

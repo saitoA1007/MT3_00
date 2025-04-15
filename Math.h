@@ -33,6 +33,9 @@ Vector3 Project(const Vector3& v1, const Vector3& v2);
 // 最近接点
 Vector3 ClosestPoint(const Vector3& point,const Segment& segment);
 
+// 引数のベクトルに垂直なベクトルを求める
+Vector3 Perpendicular(const Vector3& vector);
+
 // 4x4行列の加法
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2);
 // 4x4行列の減算

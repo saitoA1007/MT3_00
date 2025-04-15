@@ -66,6 +66,13 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	return Add(segment.origin, Multiply(segmentVector, t));
 }
 
+Vector3 Perpendicular(const Vector3& vector) {
+	if (vector.x != 0.0f || vector.y != 0.0f) {
+		return { -vector.y,vector.x,0.0f };
+	}
+	return { 0.0f,-vector.z,vector.y };
+}
+
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 result;
 	for (int i = 0; i < 4; ++i) {
