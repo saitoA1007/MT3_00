@@ -11,7 +11,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_05";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_06";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -29,19 +29,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// カメラ
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 
-	// aabb1
-	AABB aabb1{
+	// aabb
+	AABB aabb{
 		.min{-0.5f,-0.5f,-0.5f},
 		.max{0.0f,0.0f,0.0f}
 	};
-	// aabb2
-	AABB aabb2{
-		.min{0.2f,0.2f,0.2f},
-		.max{1.0f,1.0f,1.0f}
-	};
 	
+	// 球
+	Sphere sphere{ {1.0f,1.0f,1.0f},1.0f };
+	
+
 	// 当たり判定のフラグ
-	bool isAABBHit = false;
+	bool isSphereHit = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -60,21 +59,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		camera.DrawCameraDebugWindow(input);
 
 		ImGui::Begin("DebugWindow");
-		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
-		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
-		ImGui::DragFloat3("aabb2.min", &aabb2.min.x, 0.01f);
-		ImGui::DragFloat3("aabb2.max", &aabb2.max.x, 0.01f);
+		ImGui::DragFloat3("aabb1.min", &aabb.min.x, 0.01f);
+		ImGui::DragFloat3("aabb1.max", &aabb.max.x, 0.01f);
+		ImGui::DragFloat3("sphere.center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("sphere.radius", &sphere.radius, 0.01f);
 		ImGui::End();
 
 		// 最大、最小の調整処理
-		aabb1.min = Min(aabb1.min, aabb1.max);
-		aabb1.max = Max(aabb1.min, aabb1.max);
-		aabb2.min = Min(aabb2.min, aabb2.max);
-		aabb2.max = Max(aabb2.min, aabb2.max);
+		aabb.min = Min(aabb.min, aabb.max);
+		aabb.max = Max(aabb.min, aabb.max);
 #endif 
 
-		// 球と平面の衝突判定の処理
-		isAABBHit = IsAABBCollision(aabb1,aabb2);
+		// 球とAABBの衝突判定の処理
+		isSphereHit = IsAABBSphereCollision(aabb,sphere);
 
 		///
 		/// ↑更新処理ここまで
@@ -87,14 +84,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter());
 
-		// aabb1の描画
-		DrawObject3D::DrawAABB(aabb1, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+		// 球を描画
+		DrawObject3D::DrawSphere(sphere, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 
-		// aabb2の描画
-		if (isAABBHit) {
-			DrawObject3D::DrawAABB(aabb2, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
+		// aabbの描画
+		if (isSphereHit) {
+			DrawObject3D::DrawAABB(aabb, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
 		} else {
-			DrawObject3D::DrawAABB(aabb2, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+			DrawObject3D::DrawAABB(aabb, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 		}
 			
 		///
