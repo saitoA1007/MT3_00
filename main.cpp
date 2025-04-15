@@ -11,7 +11,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_01";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_03";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -32,10 +32,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 平面
 	Plane plane{ {0.0f,1.0f,0.0f},1.0f };
 
-	// 球
-	Sphere sphere{{ 0.0f,0.0f,0.0f }, 0.5f};
+	// 線
+	Segment segment{ {-0.4f,0.1f,0.0f},{1.0f,0.5f,0.0f} };
+	segment.diff = Normalize(segment.diff);
+	
 	// 当たり判定のフラグ
-	bool isSphereHit = false;
+	bool issegmentHit = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -54,17 +56,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		camera.DrawCameraDebugWindow(input);
 
 		ImGui::Begin("DebugWindow");
-		ImGui::DragFloat3("sphere[0].center", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("sphere[0].radius", &sphere.radius, 0.01f);
 		ImGui::DragFloat3("plane.normal", &plane.normal.x, 0.01f);
 		ImGui::DragFloat("plane.distance", &plane.distance, 0.01f);
 		plane.normal = Normalize(plane.normal);
+		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
+		segment.diff = Normalize(segment.diff);
 		ImGui::End();
 
 #endif 
 
 		// 球と平面の衝突判定の処理
-		isSphereHit = IsCollision(sphere, plane);
+		issegmentHit = IsCollision(segment, plane);
 
 		///
 		/// ↑更新処理ここまで
@@ -81,10 +84,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		DrawObject3D::DrawPlane(plane, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 
 		// 球を描画
-		if (isSphereHit) {
-			DrawObject3D::DrawSphere(sphere, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
+		if (issegmentHit) {
+			DrawObject3D::DrawLine(segment, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
 		} else {
-			DrawObject3D::DrawSphere(sphere, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+			DrawObject3D::DrawLine(segment, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 		}
 			
 		///

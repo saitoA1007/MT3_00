@@ -70,6 +70,14 @@ void DrawObject3D::DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4
 	}
 }
 
+void DrawObject3D::DrawLine(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	// 始点、終点を求める処理
+	Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+	Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+	// 線を描画
+	Novice::DrawLine(static_cast<int>(start.x), static_cast<int>(start.y), static_cast<int>(end.x), static_cast<int>(end.y), color);
+}
+
 void DrawObject3D::DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	Vector3 center = Multiply(plane.normal, plane.distance); // 中心点を決める
 	Vector3 perpendiculars[4];
