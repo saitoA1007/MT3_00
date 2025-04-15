@@ -107,3 +107,29 @@ bool IsAABBSphereCollision(const AABB& aabb, const Sphere& sphere) {
 		return false;
 	}
 }
+
+bool IsAABBSegmentCollision(const AABB& aabb, const Segment& segment) {
+
+	// 各軸のnear,farを求める
+	Vector3 tNear = Min({ (aabb.min.x - segment.origin.x) / segment.diff.x,(aabb.min.y - segment.origin.y) / segment.diff.y,(aabb.min.z - segment.origin.z) / segment.diff.z },
+		{ (aabb.max.x - segment.origin.x) / segment.diff.x,(aabb.max.y - segment.origin.y) / segment.diff.y,(aabb.max.z - segment.origin.z) / segment.diff.z });
+	Vector3 tFar = Max({ (aabb.min.x - segment.origin.x) / segment.diff.x,(aabb.min.y - segment.origin.y) / segment.diff.y,(aabb.min.z - segment.origin.z) / segment.diff.z },
+		{ (aabb.max.x - segment.origin.x) / segment.diff.x,(aabb.max.y - segment.origin.y) / segment.diff.y,(aabb.max.z - segment.origin.z) / segment.diff.z });
+
+	// AABBとの衝突点（貫通点）のtが小さい方
+	float tMin = std::max(std::max(tNear.x, tNear.y), tNear.z);
+	// AABBとの衝突点（貫通点）のtが大きい方
+	float tMax = std::min(std::min(tFar.x, tFar.y), tFar.z);
+
+	// 範囲の外を出ていたらfalse
+	if (tMin > 1.0f || tMax < 0.0f) {
+		return false;
+	}
+
+	// 衝突した時
+	if (tMin <= tMax) {
+		return true;
+	} else {
+		return false;
+	}
+}

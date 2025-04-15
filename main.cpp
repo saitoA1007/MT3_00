@@ -11,7 +11,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_06";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_07";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -32,15 +32,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// aabb
 	AABB aabb{
 		.min{-0.5f,-0.5f,-0.5f},
-		.max{0.0f,0.0f,0.0f}
+		.max{0.5f,0.5f,0.5f}
 	};
 	
-	// 球
-	Sphere sphere{ {1.0f,1.0f,1.0f},1.0f };
-	
+	// 線
+	Segment segment{
+		.origin{-0.7f,0.3f,0.0f},
+		.diff{2.0f,-0.5f,0.0f}
+	};
 
 	// 当たり判定のフラグ
-	bool isSphereHit = false;
+	bool isAABBHit = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -61,17 +63,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Begin("DebugWindow");
 		ImGui::DragFloat3("aabb1.min", &aabb.min.x, 0.01f);
 		ImGui::DragFloat3("aabb1.max", &aabb.max.x, 0.01f);
-		ImGui::DragFloat3("sphere.center", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("sphere.radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
 		ImGui::End();
 
 		// 最大、最小の調整処理
 		aabb.min = Min(aabb.min, aabb.max);
 		aabb.max = Max(aabb.min, aabb.max);
+		// 正規化
+		segment.diff = Normalize(segment.diff);
 #endif 
 
-		// 球とAABBの衝突判定の処理
-		isSphereHit = IsAABBSphereCollision(aabb,sphere);
+		// AABBと線の衝突判定の処理
+		isAABBHit = IsAABBSegmentCollision(aabb,segment);
 
 		///
 		/// ↑更新処理ここまで
@@ -84,11 +88,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter());
 
-		// 球を描画
-		DrawObject3D::DrawSphere(sphere, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+		// 線を描画
+		DrawObject3D::DrawLine(segment, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 
 		// aabbの描画
-		if (isSphereHit) {
+		if (isAABBHit) {
 			DrawObject3D::DrawAABB(aabb, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
 		} else {
 			DrawObject3D::DrawAABB(aabb, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
