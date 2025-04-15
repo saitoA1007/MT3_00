@@ -2,7 +2,7 @@
 #include"Math.h"
 #include<cmath>
 
-bool IsCollision(const Sphere& s1, const Sphere& s2) {
+bool IsSpheresCollision(const Sphere& s1, const Sphere& s2) {
 	// 半径の合計より短ければ衝突
 	if (Length(Subtract(s1.center, s2.center)) < s1.radius + s2.radius) {
 		return true;
@@ -11,7 +11,7 @@ bool IsCollision(const Sphere& s1, const Sphere& s2) {
 	}
 }
 
-bool IsCollision(const Sphere& sphere, const Plane& plane) {
+bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane) {
 	// 球の半径より短ければ衝突
 	if (std::fabs(Dot(plane.normal, sphere.center) - plane.distance) <= sphere.radius) {
 		return true;
@@ -20,7 +20,7 @@ bool IsCollision(const Sphere& sphere, const Plane& plane) {
 	}
 }
 
-bool IsCollision(const Segment& segment, const Plane& plane) {
+bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane) {
 	// 垂直判定を行うために、法線と線の内積を求める
 	float dot = Dot(plane.normal, segment.diff);
 
@@ -33,6 +33,45 @@ bool IsCollision(const Segment& segment, const Plane& plane) {
 	float t = (plane.distance - Dot(plane.normal, segment.origin)) / dot;
 
 	if (t >= 0.0f && t <= 1.0f) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool IsSegmentTriangleCollision(const Triangle& triangle, const Segment& segment) {
+
+	// 三角形の3つの頂点を使って平面を求める
+	Plane plane;
+	plane.normal = Cross(Subtract(triangle.vertices[1], triangle.vertices[0]), Subtract(triangle.vertices[2], triangle.vertices[1]));
+	plane.distance = Dot(plane.normal, triangle.vertices[0]);
+	// 法線を正規化
+	plane.normal = Normalize(plane.normal);
+	// 垂直判定を行うために、法線と線の内積を求める
+	float dot = Dot(plane.normal, segment.diff);
+
+	// tを求める
+	float t = (plane.distance - Dot(plane.normal, segment.origin)) / dot;
+	// 衝突点pを求める
+	Vector3 p = Vector3(segment.origin) + Vector3(segment.diff.x * t, segment.diff.y * t, segment.diff.z * t);
+
+	// 各辺を結んだベクトル
+	Vector3 v01 = Subtract(triangle.vertices[1], triangle.vertices[0]);
+	Vector3 v1p = p - triangle.vertices[1];
+	Vector3 v12 = Subtract(triangle.vertices[2], triangle.vertices[1]);
+	Vector3 v2p = p - triangle.vertices[2];
+	Vector3 v20 = Subtract(triangle.vertices[0], triangle.vertices[2]);
+	Vector3 v0p = p - triangle.vertices[0];
+
+	// 各辺を結んだベクトルと、頂点と衝突点pを結んだベクトルのクロス積を取る
+	Vector3 cross01 = Cross(v01, v1p);
+	Vector3 cross12 = Cross(v12, v2p);
+	Vector3 cross20 = Cross(v20, v0p);
+
+	// すべての小三角形のクロス積と法線が同じ方向を向いていたら衝突
+	if (Dot(cross01, plane.normal) >= 0.0f &&
+		Dot(cross12, plane.normal) >= 0.0f &&
+		Dot(cross20, plane.normal) >= 0.0f) {
 		return true;
 	} else {
 		return false;

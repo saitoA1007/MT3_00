@@ -11,7 +11,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_03";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_04";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -29,11 +29,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// カメラ
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 
-	// 平面
-	Plane plane{ {0.0f,1.0f,0.0f},1.0f };
+	// 三角形
+	Triangle triangle{{
+		{-1.0f,0.0f,0.0f},
+		{0.0f,1.0f,0.0f},
+		{1.0f,0.0f,0.0f}}
+	};
 
 	// 線
-	Segment segment{ {-0.4f,0.1f,0.0f},{1.0f,0.5f,0.0f} };
+	Segment segment{ {-0.4f,0.1f,-0.5f},{1.0f,0.5f,1.0f} };
 	segment.diff = Normalize(segment.diff);
 	
 	// 当たり判定のフラグ
@@ -56,9 +60,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		camera.DrawCameraDebugWindow(input);
 
 		ImGui::Begin("DebugWindow");
-		ImGui::DragFloat3("plane.normal", &plane.normal.x, 0.01f);
-		ImGui::DragFloat("plane.distance", &plane.distance, 0.01f);
-		plane.normal = Normalize(plane.normal);
+		ImGui::DragFloat3("triangle.v0", &triangle.vertices[0].x, 0.01f);
+		ImGui::DragFloat3("triangle.v1", &triangle.vertices[1].x, 0.01f);
+		ImGui::DragFloat3("triangle.v2", &triangle.vertices[2].x, 0.01f);
 		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
 		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
 		segment.diff = Normalize(segment.diff);
@@ -67,7 +71,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #endif 
 
 		// 球と平面の衝突判定の処理
-		issegmentHit = IsCollision(segment, plane);
+		issegmentHit = IsSegmentTriangleCollision(triangle,segment);
 
 		///
 		/// ↑更新処理ここまで
@@ -80,10 +84,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter());
 
-		// 平面を描画
-		DrawObject3D::DrawPlane(plane, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+		// 三角形を描画
+		DrawObject3D::DrawTriangle(triangle, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 
-		// 球を描画
+		// 線を描画
 		if (issegmentHit) {
 			DrawObject3D::DrawLine(segment, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
 		} else {

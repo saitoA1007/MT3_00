@@ -100,6 +100,20 @@ void DrawObject3D::DrawPlane(const Plane& plane, const Matrix4x4& viewProjection
 	Novice::DrawLine(static_cast<int>(points[3].x), static_cast<int>(points[3].y), static_cast<int>(points[0].x), static_cast<int>(points[0].y), color);
 }
 
+void DrawObject3D::DrawTriangle(Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+
+	// スクリーン座標に変換
+	Triangle ScreenTriangle;
+	ScreenTriangle.vertices[0] = Transform(Transform(triangle.vertices[0], viewProjectionMatrix), viewportMatrix);
+	ScreenTriangle.vertices[1] = Transform(Transform(triangle.vertices[1], viewProjectionMatrix), viewportMatrix);
+	ScreenTriangle.vertices[2] = Transform(Transform(triangle.vertices[2], viewProjectionMatrix), viewportMatrix);
+
+	// 三角形の描画
+	Novice::DrawTriangle(static_cast<int>(ScreenTriangle.vertices[0].x), static_cast<int>(ScreenTriangle.vertices[0].y),
+		static_cast<int>(ScreenTriangle.vertices[1].x), static_cast<int>(ScreenTriangle.vertices[1].y),
+		static_cast<int>(ScreenTriangle.vertices[2].x), static_cast<int>(ScreenTriangle.vertices[2].y), color, kFillModeWireFrame);
+}
+
 void DrawObject3D::DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 
 	// 分割数
