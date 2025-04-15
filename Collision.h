@@ -12,3 +12,6 @@ bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane);
 
 // 線と三角形の衝突判定
 bool IsSegmentTriangleCollision(const Triangle& triangle, const Segment& segment);
+
+// aabb同士の衝突判定
+bool IsAABBCollision(const AABB& aabb1, const AABB& aabb2);

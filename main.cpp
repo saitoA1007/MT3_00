@@ -11,7 +11,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_04";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_05";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -29,19 +29,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// カメラ
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 
-	// 三角形
-	Triangle triangle{{
-		{-1.0f,0.0f,0.0f},
-		{0.0f,1.0f,0.0f},
-		{1.0f,0.0f,0.0f}}
+	// aabb1
+	AABB aabb1{
+		.min{-0.5f,-0.5f,-0.5f},
+		.max{0.0f,0.0f,0.0f}
 	};
-
-	// 線
-	Segment segment{ {-0.4f,0.1f,-0.5f},{1.0f,0.5f,1.0f} };
-	segment.diff = Normalize(segment.diff);
+	// aabb2
+	AABB aabb2{
+		.min{0.2f,0.2f,0.2f},
+		.max{1.0f,1.0f,1.0f}
+	};
 	
 	// 当たり判定のフラグ
-	bool issegmentHit = false;
+	bool isAABBHit = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -60,18 +60,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		camera.DrawCameraDebugWindow(input);
 
 		ImGui::Begin("DebugWindow");
-		ImGui::DragFloat3("triangle.v0", &triangle.vertices[0].x, 0.01f);
-		ImGui::DragFloat3("triangle.v1", &triangle.vertices[1].x, 0.01f);
-		ImGui::DragFloat3("triangle.v2", &triangle.vertices[2].x, 0.01f);
-		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
-		segment.diff = Normalize(segment.diff);
+		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
+		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
+		ImGui::DragFloat3("aabb2.min", &aabb2.min.x, 0.01f);
+		ImGui::DragFloat3("aabb2.max", &aabb2.max.x, 0.01f);
 		ImGui::End();
 
+		// 最大、最小の調整処理
+		aabb1.min = Min(aabb1.min, aabb1.max);
+		aabb1.max = Max(aabb1.min, aabb1.max);
+		aabb2.min = Min(aabb2.min, aabb2.max);
+		aabb2.max = Max(aabb2.min, aabb2.max);
 #endif 
 
 		// 球と平面の衝突判定の処理
-		issegmentHit = IsSegmentTriangleCollision(triangle,segment);
+		isAABBHit = IsAABBCollision(aabb1,aabb2);
 
 		///
 		/// ↑更新処理ここまで
@@ -84,14 +87,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter());
 
-		// 三角形を描画
-		DrawObject3D::DrawTriangle(triangle, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+		// aabb1の描画
+		DrawObject3D::DrawAABB(aabb1, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 
-		// 線を描画
-		if (issegmentHit) {
-			DrawObject3D::DrawLine(segment, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
+		// aabb2の描画
+		if (isAABBHit) {
+			DrawObject3D::DrawAABB(aabb2, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
 		} else {
-			DrawObject3D::DrawLine(segment, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+			DrawObject3D::DrawAABB(aabb2, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 		}
 			
 		///
