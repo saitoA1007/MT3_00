@@ -73,6 +73,38 @@ Vector3 Perpendicular(const Vector3& vector) {
 	return { 0.0f,-vector.z,vector.y };
 }
 
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
+	return Vector3{
+		v1.x + (v2.x - v1.x) * t,
+		v1.y + (v2.y - v1.y) * t,
+		v1.z + (v2.z - v1.z) * t
+	};
+}
+
+Vector3 Bezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, float t) {
+	Vector3 p0p1 = Lerp(p0, p1, t);
+	Vector3 p1p2 = Lerp(p1, p2, t);
+	Vector3 p = Lerp(p0p1, p1p2, t);
+	return p;
+}
+
+Vector3 CatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t) {
+	Vector3 result;
+	result.x = 1.0f / 2.0f * (
+		(-p0.x + 3.0f * p1.x - 3.0f * p2.x + p3.x) * t * t * t +
+		(2.0f * p0.x - 5.0f * p1.x + 4.0f * p2.x - p3.x) * t * t + (-p0.x + p2.x) * t + 2.0f * p1.x);
+
+	result.y = 1.0f / 2.0f * (
+		(-p0.y + 3.0f * p1.y - 3.0f * p2.y + p3.y) * t * t * t +
+		(2.0f * p0.y - 5.0f * p1.y + 4.0f * p2.y - p3.y) * t * t + (-p0.y + p2.y) * t + 2.0f * p1.y);
+
+	result.z = 1.0f / 2.0f * (
+		(-p0.z + 3.0f * p1.z - 3.0f * p2.z + p3.z) * t * t * t +
+		(2.0f * p0.z - 5.0f * p1.z + 4.0f * p2.z - p3.z) * t * t + (-p0.z + p2.z) * t + 2.0f * p1.z);
+
+	return result;
+}
+
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 result;
 	for (int i = 0; i < 4; ++i) {

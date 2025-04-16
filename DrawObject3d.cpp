@@ -177,7 +177,7 @@ void DrawObject3D::DrawAABB(const AABB aabb, const Matrix4x4& viewProjectionMatr
 	Box screenBox;
 
 	// スクリーン座標に変換
-	for (int i = 0; i < 8; ++i) {
+	for (uint32_t i = 0; i < 8; ++i) {
 		ndcBox.vertices[i] = Transform(box.vertices[i], viewProjectionMatrix);
 		screenBox.vertices[i] = Transform(ndcBox.vertices[i], viewportMatrix);
 	}
@@ -196,5 +196,39 @@ void DrawObject3D::DrawAABB(const AABB aabb, const Matrix4x4& viewProjectionMatr
 
 		// 線を描画
 		Novice::DrawLine(static_cast<int>(startPos.x), static_cast<int>(startPos.y), static_cast<int>(endPos.x), static_cast<int>(endPos.y), color);
+	}
+}
+
+void DrawObject3D::DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+
+	// 分割数
+	const uint32_t kSubdivision = 32;
+
+	// ベジェ曲線の点を求める
+	Vector3 bezier0[kSubdivision]{};
+	Vector3 bezier1[kSubdivision]{};
+
+	// ベジェ曲線を使い線を求める処理
+	for (uint32_t index = 0; index < kSubdivision; ++index) {
+		float t0 = static_cast<float>(index) / static_cast<float>(kSubdivision);
+		float t1 = (1.0f + static_cast<float>(index)) / static_cast<float>(kSubdivision);
+		// t0とt1との制御点を使ってベジェ曲線上の点を求める
+		bezier0[index] = Bezier(controlPoint0, controlPoint1, controlPoint2, t0);
+		bezier1[index] = Bezier(controlPoint0, controlPoint1, controlPoint2, t1);
+	}
+
+	// スクリーン座標に変換
+	Vector3 ScreenBezier0[kSubdivision]{};
+	Vector3 ScreenBezier1[kSubdivision]{};
+	for (uint32_t i = 0; i < kSubdivision; ++i) {
+		ScreenBezier0[i] = Transform(Transform(bezier0[i], viewProjectionMatrix), viewportMatrix);
+		ScreenBezier1[i] = Transform(Transform(bezier1[i], viewProjectionMatrix), viewportMatrix);
+	}
+
+	//// 線の描画
+	for (int i = 0; i < kSubdivision; ++i) {
+		Novice::DrawLine(
+			static_cast<int>(ScreenBezier0[i].x), static_cast<int>(ScreenBezier0[i].y),
+			static_cast<int>(ScreenBezier1[i].x), static_cast<int>(ScreenBezier1[i].y), color);
 	}
 }

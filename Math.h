@@ -36,6 +36,15 @@ Vector3 ClosestPoint(const Vector3& point,const Segment& segment);
 // 引数のベクトルに垂直なベクトルを求める
 Vector3 Perpendicular(const Vector3& vector);
 
+// 線形補間
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+
+// ベジェ曲線上の点を求める
+Vector3 Bezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, float t);
+
+// Catmull-romスプライン上の点を求める
+Vector3 CatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
+
 // 4x4行列の加法
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2);
 // 4x4行列の減算

@@ -11,7 +11,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_07";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_3_00";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -29,20 +29,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// カメラ
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 
-	// aabb
-	AABB aabb{
-		.min{-0.5f,-0.5f,-0.5f},
-		.max{0.5f,0.5f,0.5f}
+	// コントロールポイント
+	Vector3 controlPoints[3] = {
+		{-0.8f,0.58f,1.0f},
+		{1.76f,1.0f,-0.3f},
+		{0.94f,-0.7f,2.3f}
 	};
-	
-	// 線
-	Segment segment{
-		.origin{-0.7f,0.3f,0.0f},
-		.diff{2.0f,-0.5f,0.0f}
-	};
-
-	// 当たり判定のフラグ
-	bool isAABBHit = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -61,21 +53,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		camera.DrawCameraDebugWindow(input);
 
 		ImGui::Begin("DebugWindow");
-		ImGui::DragFloat3("aabb1.min", &aabb.min.x, 0.01f);
-		ImGui::DragFloat3("aabb1.max", &aabb.max.x, 0.01f);
-		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
+		ImGui::DragFloat3("controlPoints[0]", &controlPoints[0].x, 0.01f);
+		ImGui::DragFloat3("controlPoints[1]", &controlPoints[1].x, 0.01f);
+		ImGui::DragFloat3("controlPoints[2]", &controlPoints[2].x, 0.01f);
 		ImGui::End();
-
-		// 最大、最小の調整処理
-		aabb.min = Min(aabb.min, aabb.max);
-		aabb.max = Max(aabb.min, aabb.max);
-		// 正規化
-		segment.diff = Normalize(segment.diff);
 #endif 
-
-		// AABBと線の衝突判定の処理
-		isAABBHit = IsAABBSegmentCollision(aabb,segment);
 
 		///
 		/// ↑更新処理ここまで
@@ -88,15 +70,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter());
 
-		// 線を描画
-		DrawObject3D::DrawLine(segment, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
-
-		// aabbの描画
-		if (isAABBHit) {
-			DrawObject3D::DrawAABB(aabb, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
-		} else {
-			DrawObject3D::DrawAABB(aabb, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
+		// 点の描画
+		for (int i = 0; i < 3; ++i) {
+			DrawObject3D::DrawSphere({ controlPoints[i] ,0.01f }, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0x000000FF);
 		}
+
+		// ベジェ曲線の描画
+		DrawObject3D::DrawBezier(controlPoints[0], controlPoints[1], controlPoints[2], camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFFFFFFFF);
 			
 		///
 		/// ↑描画処理ここまで
