@@ -156,6 +156,48 @@ void DrawObject3D::DrawSphere(const Sphere& sphere, const Matrix4x4& viewProject
 	}
 }
 
+void DrawObject3D::DrawSphere(const Matrix4x4& worldMatrix, const float& radius, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+
+	// 分割数
+	const uint32_t kSubdivision = 10;
+	// 緯度分割1つ分の角度
+	const float kLatEvery = static_cast<float>(M_PI) / kSubdivision;
+	// 経度分割1つ分の角度
+	const float kLonEvery = 2.0f * static_cast<float>(M_PI) / kSubdivision;
+
+	// WVPMatrixを作成
+	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
+
+	// 緯度の方向に分割　-π/2からπまで
+	for (uint32_t latIndex = 0; latIndex < kSubdivision * 2; ++latIndex) {
+		// 現在の緯度
+		float lat = -static_cast<float>(M_PI) / 2.0f + kLatEvery * static_cast<float>(latIndex);
+
+		// 経度の方向に分割　0から2πまで
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+			// 現在の経度
+			float lon = lonIndex * kLonEvery;
+
+			// world座標系でのa,b,cを求める
+			Vector3 a = { radius * cosf(lat) * cosf(lon),radius * sinf(lat),radius * cosf(lat) * sinf(lon) };
+			Vector3 b = { radius * cosf(lat + kLatEvery) * cosf(lon),radius * sinf(lat + kLatEvery),radius * cosf(lat + kLatEvery) * sinf(lon) };
+			Vector3 c = { radius * cosf(lat) * cosf(lon + kLonEvery),radius * sinf(lat),radius * cosf(lat) * sinf(lon + kLonEvery) };
+			// NDCまで変換
+			Vector3 ndcA = Transform(a, worldViewProjectionMatrix);
+			Vector3 ndcB = Transform(b, worldViewProjectionMatrix);
+			Vector3 ndcC = Transform(c, worldViewProjectionMatrix);
+			// スクリーン座標系に変換
+			Vector3 screenA = Transform(ndcA, viewportMatrix);
+			Vector3 screenB = Transform(ndcB, viewportMatrix);
+			Vector3 screenC = Transform(ndcC, viewportMatrix);
+
+			// ab,acで線を引く
+			Novice::DrawLine(static_cast<int>(screenA.x), static_cast<int>(screenA.y), static_cast<int>(screenB.x), static_cast<int>(screenB.y), color);
+			Novice::DrawLine(static_cast<int>(screenA.x), static_cast<int>(screenA.y), static_cast<int>(screenC.x), static_cast<int>(screenC.y), color);
+		}
+	}
+}
+
 void DrawObject3D::DrawAABB(const AABB aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 
 	Box box;

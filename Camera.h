@@ -32,10 +32,10 @@ public:
 	Vector3 TransScreen(Vector3 worldPos);
 
 	// VPMatrixのゲッター
-	Matrix4x4 viewProjectionMatrixGetter();
+	Matrix4x4 GetViewProjectionMatrix();
 
 	// ビューポート行列のゲッター
-	Matrix4x4 viewportMatrixGetter();
+	Matrix4x4 GetViewportMatrix();
 
 #ifdef _DEBUG
 
