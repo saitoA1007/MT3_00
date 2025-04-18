@@ -7,11 +7,12 @@
 #include<imgui.h>
 #include"Collision.h"
 #include"InPutProcess.h"
+#include"Physics3d.h"
 
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_3_02";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_00";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -29,16 +30,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// カメラ
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 
-	Vector3 a{ 0.2f,1.0f,0.0f };
-	Vector3 b{ 2.4f,3.1f,1.2f };
-	Vector3 c = a + b;
-	Vector3 d = a - b;
-	Vector3 e = a * 2.4f;
-	Vector3 rotate{ 0.4f,1.43f,-0.8f };
-	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
-	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
-	Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
-	Matrix4x4 rotateMatrix = rotateXMatrix * rotateYMatrix * rotateZMatrix;
+	// バネ
+	Spring spring = {};
+	spring.anchor = { 0.0f,0.0f,0.0f };
+	spring.naturalLength = 1.0f;
+	spring.stiffness = 100.0f;
+	spring.dampingCoefficient = 2.0f;
+	// スクリーン座標のバネのアンカー位置
+	Vector3 screenAnchorPos = Transform(Transform(spring.anchor, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
+
+	// ボール
+	Ball ball = {};
+	ball.pos = { 1.2f,0.0f,0.0f };
+	ball.mass = 2.0f;
+	ball.radius = 0.05f;
+	ball.color = 0x0000FFFF;
+	// スクリーン座標のボール位置
+	Vector3 screenBallPos = Transform(Transform(ball.pos, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
+
+	// デルタタイム
+	float deltaTime = 1.0f / 60.0f;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -57,17 +68,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		camera.DrawCameraDebugWindow(input);
 
 		ImGui::Begin("DebugWindow");
-		
-		ImGui::Text("c:%f,%f,%f", c.x, c.y, c.z);
-		ImGui::Text("d:%f,%f,%f", d.x, d.y, d.z);
-		ImGui::Text("e:%f,%f,%f", e.x, e.y, e.z);
-		ImGui::Text("matrix:\n%f,%f,%f,%f\n%f,%f,%f,%f\n%f,%f,%f,%f\n%f,%f,%f,%f\n",
-			rotateMatrix.m[0][0], rotateMatrix.m[0][1], rotateMatrix.m[0][2], rotateMatrix.m[0][3],
-			rotateMatrix.m[1][0], rotateMatrix.m[1][1], rotateMatrix.m[1][2], rotateMatrix.m[1][3],
-			rotateMatrix.m[2][0], rotateMatrix.m[2][1], rotateMatrix.m[2][2], rotateMatrix.m[2][3],
-			rotateMatrix.m[3][0], rotateMatrix.m[3][1], rotateMatrix.m[3][2], rotateMatrix.m[3][3]);
+		if (ImGui::Button("start")) {
+			ball.pos = { 1.2f,0.0f,0.0f };
+		}
 		ImGui::End();
 #endif 
+
+		// バネの動きの処理
+		simulateSpringMovement(spring, &ball, deltaTime);
+
+		// スクリーン座標のバネのアンカー位置の更新処理
+		screenAnchorPos = Transform(Transform(spring.anchor, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
+		// スクリーン座標のボール位置の更新処理
+		screenBallPos = Transform(Transform(ball.pos, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
 
 		///
 		/// ↑更新処理ここまで
@@ -79,6 +92,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.GetViewProjectionMatrix(), camera.GetViewportMatrix());
+
+		// バネのアンカーとボールを繋ぐ線の描画
+		Novice::DrawLine(static_cast<int>(screenAnchorPos.x), static_cast<int>(screenAnchorPos.y),
+			static_cast<int>(screenBallPos.x), static_cast<int>(screenBallPos.y), 0xFFFFFFFF);
+
+		// ボールの描画
+		DrawObject3D::DrawSphere({ball.pos,ball.radius}, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), ball.color);
 
 		///
 		/// ↑描画処理ここまで

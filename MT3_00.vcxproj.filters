@@ -44,6 +44,9 @@
     <ClCompile Include="Collision.cpp">
       <Filter>ソースファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Physics3d.cpp">
+      <Filter>ソースファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -147,6 +150,9 @@
       <Filter>ヘッダファイル</Filter>
     </ClInclude>
     <ClInclude Include="InPutProcess.h">
+      <Filter>ヘッダファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics3d.h">
       <Filter>ヘッダファイル</Filter>
     </ClInclude>
   </ItemGroup>
