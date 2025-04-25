@@ -36,3 +36,19 @@ void pendulumMotion(Pendulum& pendulum, Vector3& postion, const float& deltaTime
 	postion.y = pendulum.anchor.y - std::cosf(pendulum.angle) * pendulum.length;
 	postion.z = pendulum.anchor.z;
 }
+
+void ConicalPendulumMotion(ConicalPendulum& conicalPendulum, Vector3& position, const float& deltaTime) {
+
+	// 角度(ω)を求める処理
+	conicalPendulum.angularVelocity = std::sqrtf(9.8f / (conicalPendulum.length * std::cosf(conicalPendulum.halfApexAngle)));
+	conicalPendulum.angle += conicalPendulum.angularVelocity * deltaTime;
+
+	// 回る軌跡の半径と高さを求める
+	float radius = std::sinf(conicalPendulum.halfApexAngle) * conicalPendulum.length;
+	float height = std::cosf(conicalPendulum.halfApexAngle) * conicalPendulum.length;
+
+	// 先端の位置を求める
+	position.x = conicalPendulum.anchor.x + std::cosf(conicalPendulum.angle) * radius;
+	position.y = conicalPendulum.anchor.y - height;
+	position.z = conicalPendulum.anchor.z - std::sinf(conicalPendulum.angle) * radius;
+}

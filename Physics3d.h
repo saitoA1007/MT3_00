@@ -39,3 +39,6 @@ void simulateSpringMovement(Spring& spring, Ball& ball, const float& deltaTime);
 
 // 振り子の動き
 void pendulumMotion(Pendulum& pendulum, Vector3& postion, const float& deltaTime);
+
+// 円錐振り子の動き
+void ConicalPendulumMotion(ConicalPendulum& conicalPendulum, Vector3& position, const float& deltaTime);

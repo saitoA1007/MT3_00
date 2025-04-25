@@ -12,7 +12,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_02";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_03";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -35,21 +35,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// スクリーン座標に変換
 	Vector3 screenSphere = camera.TransScreen(sphere.center);
 
-	// 振り子
-	Pendulum pendulum;
-	pendulum.anchor = { 0.0f,1.0f,0.0f };
-	pendulum.length = 0.8f;
-	pendulum.angle = 0.7f;
-	pendulum.angularVelocity = 0.0f;
-	pendulum.angularAcceleration = 0.0f;
-	// 振り子の原点
-	Vector3 screenOrigin = camera.TransScreen(pendulum.anchor);
+	// 円錐振り子
+	ConicalPendulum conicalPendulum;
+	conicalPendulum.anchor = { 0.0f,1.0f,0.0f };
+	conicalPendulum.length = 0.8f;
+	conicalPendulum.halfApexAngle = 0.7f;
+	conicalPendulum.angle = 0.0f;
+	conicalPendulum.angularVelocity = 0.0f;
+	// 円錐振り子の原点
+	Vector3 screenOrigin = camera.TransScreen(conicalPendulum.anchor);
 
 	// デルタタイム
 	float deltaTime = 1.0f / 60.0f;
 
-	// 円運動を実行する処理
-	bool isPendulumStart = false;
+	// 円錐振り子運動を実行する処理
+	bool isConicalPendulumStart = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -69,23 +69,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Begin("DebugWindow");
 		if (ImGui::Button("start")) {
-			if (isPendulumStart) {
-				isPendulumStart = false;
+			if (isConicalPendulumStart) {
+				isConicalPendulumStart = false;
 			} else {
-				isPendulumStart = true;
+				isConicalPendulumStart = true;
 			}
 		}
+		ImGui::DragFloat("Length", &conicalPendulum.length,0.01f);
+		ImGui::DragFloat("halfApexAngle", &conicalPendulum.halfApexAngle,0.01f);
 		ImGui::End();
 #endif 
 
-		// フラグがtrueの時、振り子運動がスタートする
-		if (isPendulumStart) {
-			
-			// 振り子の処理
-			pendulumMotion(pendulum, sphere.center, deltaTime);
+		// フラグがtrueの時、円錐振り子運動がスタートする
+		if (isConicalPendulumStart) {
+		
+			// 円錐振り子の処理
+			ConicalPendulumMotion(conicalPendulum, sphere.center, deltaTime);
 
-			// 振り子の原点
-			screenOrigin = camera.TransScreen(pendulum.anchor);
+			// 円錐振り子の原点
+			screenOrigin = camera.TransScreen(conicalPendulum.anchor);
 			// 球の中心座標をスクリーン座標に変換
 			screenSphere = camera.TransScreen(sphere.center);
 		}
@@ -101,7 +103,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.GetViewProjectionMatrix(), camera.GetViewportMatrix());
 
-		// 振り子の線を描画
+		// 円錐振り子の線を描画
 		Novice::DrawLine(static_cast<int>(screenOrigin.x), static_cast<int>(screenOrigin.y),
 			static_cast<int>(screenSphere.x), static_cast<int>(screenSphere.y), 0xFFFFFFFF);
 
