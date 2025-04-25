@@ -12,7 +12,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_00";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_01";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -30,26 +30,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// カメラ
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 
-	// バネ
-	Spring spring = {};
-	spring.anchor = { 0.0f,0.0f,0.0f };
-	spring.naturalLength = 1.0f;
-	spring.stiffness = 100.0f;
-	spring.dampingCoefficient = 2.0f;
-	// スクリーン座標のバネのアンカー位置
-	Vector3 screenAnchorPos = Transform(Transform(spring.anchor, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
+	// 球
+	Sphere sphere = { {1.0f,0.0f,0.0f},0.05f };
 
-	// ボール
-	Ball ball = {};
-	ball.pos = { 1.2f,0.0f,0.0f };
-	ball.mass = 2.0f;
-	ball.radius = 0.05f;
-	ball.color = 0x0000FFFF;
-	// スクリーン座標のボール位置
-	Vector3 screenBallPos = Transform(Transform(ball.pos, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
+	// 回転する時の原点
+	Vector3 origin = { 0.0f,0.0f,0.0f };
+	float radius = std::fabsf(Length(origin - sphere.center));
+	float angularVelocity = 3.14f;
+	float angle = 0.0f;
+
+	// 等速円運動の速度
+	Vector3 velocity = { 0.0f,0.0f,0.0f };
 
 	// デルタタイム
 	float deltaTime = 1.0f / 60.0f;
+
+	// 円運動を実行する処理
+	bool isRotateStart = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -69,18 +66,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Begin("DebugWindow");
 		if (ImGui::Button("start")) {
-			ball.pos = { 1.2f,0.0f,0.0f };
+			isRotateStart = true;
 		}
 		ImGui::End();
 #endif 
 
-		// バネの動きの処理
-		simulateSpringMovement(spring, &ball, deltaTime);
+		// フラグがtrueの時、円運動がスタートする
+		if (isRotateStart) {
+			// 角度を増やしていく
+			angle += angularVelocity * deltaTime;
+			// 一周したら角度を0に戻す
+			if (angularVelocity * 2.0f <= angle) {
+				angle = 0.0f;
+			}
 
-		// スクリーン座標のバネのアンカー位置の更新処理
-		screenAnchorPos = Transform(Transform(spring.anchor, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
-		// スクリーン座標のボール位置の更新処理
-		screenBallPos = Transform(Transform(ball.pos, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
+			// 球の座標を更新する
+			sphere.center.x = origin.x + std::cosf(angle) * radius;
+			sphere.center.y = origin.y + std::sinf(angle) * radius;
+			sphere.center.z = origin.z;
+		}
 
 		///
 		/// ↑更新処理ここまで
@@ -93,12 +97,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.GetViewProjectionMatrix(), camera.GetViewportMatrix());
 
-		// バネのアンカーとボールを繋ぐ線の描画
-		Novice::DrawLine(static_cast<int>(screenAnchorPos.x), static_cast<int>(screenAnchorPos.y),
-			static_cast<int>(screenBallPos.x), static_cast<int>(screenBallPos.y), 0xFFFFFFFF);
-
-		// ボールの描画
-		DrawObject3D::DrawSphere({ball.pos,ball.radius}, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), ball.color);
+		// 球の描画
+		DrawObject3D::DrawSphere(sphere, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), 0xFFFFFFFF);
 
 		///
 		/// ↑描画処理ここまで
