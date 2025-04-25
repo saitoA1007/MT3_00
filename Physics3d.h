@@ -22,7 +22,7 @@ struct Pendulum {
 	Vector3 anchor;  // アンカーポイント。固定された端の位置
 	float length;  // ヒモの長さ
 	float angle;   // 現在の角度
-	float angularVelocity;      // 各速度ω
+	float angularVelocity;      // 角速度ω
 	float angularAcceleration;  // 角加速度
 };
 
@@ -35,4 +35,7 @@ struct ConicalPendulum {
 };
 
 // バネの動きの処理
-void simulateSpringMovement(Spring& spring, Ball* ball, const float& deltaTime);
+void simulateSpringMovement(Spring& spring, Ball& ball, const float& deltaTime);
+
+// 振り子の動き
+void pendulumMotion(Pendulum& pendulum, Vector3& postion, const float& deltaTime);

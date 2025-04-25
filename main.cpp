@@ -12,7 +12,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_01";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_02";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -31,22 +31,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 
 	// 球
-	Sphere sphere = { {1.0f,0.0f,0.0f},0.05f };
+	Sphere sphere = { {0.0f,0.2f,0.0f},0.05f };
+	// スクリーン座標に変換
+	Vector3 screenSphere = camera.TransScreen(sphere.center);
 
-	// 回転する時の原点
-	Vector3 origin = { 0.0f,0.0f,0.0f };
-	float radius = std::fabsf(Length(origin - sphere.center));
-	float angularVelocity = 3.14f;
-	float angle = 0.0f;
-
-	// 等速円運動の速度
-	Vector3 velocity = { 0.0f,0.0f,0.0f };
+	// 振り子
+	Pendulum pendulum;
+	pendulum.anchor = { 0.0f,1.0f,0.0f };
+	pendulum.length = 0.8f;
+	pendulum.angle = 0.7f;
+	pendulum.angularVelocity = 0.0f;
+	pendulum.angularAcceleration = 0.0f;
+	// 振り子の原点
+	Vector3 screenOrigin = camera.TransScreen(pendulum.anchor);
 
 	// デルタタイム
 	float deltaTime = 1.0f / 60.0f;
 
 	// 円運動を実行する処理
-	bool isRotateStart = false;
+	bool isPendulumStart = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -66,24 +69,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Begin("DebugWindow");
 		if (ImGui::Button("start")) {
-			isRotateStart = true;
+			if (isPendulumStart) {
+				isPendulumStart = false;
+			} else {
+				isPendulumStart = true;
+			}
 		}
 		ImGui::End();
 #endif 
 
-		// フラグがtrueの時、円運動がスタートする
-		if (isRotateStart) {
-			// 角度を増やしていく
-			angle += angularVelocity * deltaTime;
-			// 一周したら角度を0に戻す
-			if (angularVelocity * 2.0f <= angle) {
-				angle = 0.0f;
-			}
+		// フラグがtrueの時、振り子運動がスタートする
+		if (isPendulumStart) {
+			
+			// 振り子の処理
+			pendulumMotion(pendulum, sphere.center, deltaTime);
 
-			// 球の座標を更新する
-			sphere.center.x = origin.x + std::cosf(angle) * radius;
-			sphere.center.y = origin.y + std::sinf(angle) * radius;
-			sphere.center.z = origin.z;
+			// 振り子の原点
+			screenOrigin = camera.TransScreen(pendulum.anchor);
+			// 球の中心座標をスクリーン座標に変換
+			screenSphere = camera.TransScreen(sphere.center);
 		}
 
 		///
@@ -96,6 +100,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.GetViewProjectionMatrix(), camera.GetViewportMatrix());
+
+		// 振り子の線を描画
+		Novice::DrawLine(static_cast<int>(screenOrigin.x), static_cast<int>(screenOrigin.y),
+			static_cast<int>(screenSphere.x), static_cast<int>(screenSphere.y), 0xFFFFFFFF);
 
 		// 球の描画
 		DrawObject3D::DrawSphere(sphere, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), 0xFFFFFFFF);
