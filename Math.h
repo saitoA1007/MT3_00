@@ -28,8 +28,18 @@ Vector3 Max(Vector3 pos1, Vector3 pos2);
 // 最小値
 Vector3 Min(Vector3 pos1, Vector3 pos2);
 
+// 4x4行列の加法
+Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2);
+// 4x4行列の減算
+Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2);
 // 4x4行列の積
 Matrix4x4 Multiply(const Matrix4x4& matrix1, const Matrix4x4& matrix2);
+// 4x4逆行列の計算
+Matrix4x4 Inverse(const Matrix4x4& matrix);
+// 4x4行列の転置行列
+Matrix4x4 Transpose(const Matrix4x4& m);
+// 4x4単位行列
+Matrix4x4 MakeIdentity4x4();
 
 // 4xx4のX軸の回転行列を作成
 Matrix4x4 MakeRotateXMatrix(const float& theta);
@@ -47,16 +57,16 @@ Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 
 // 4x4のSRTによるアフィン変換行列の作成
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& theta, const Vector3 translate);
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3 translate);
 
 // (3+1)次元座標系をデカルト座標系に変換
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
-// 4x4逆行列の計算
-Matrix4x4 InverseMatrix(const Matrix4x4& matrix);
-
 // 透視投影行列の作成
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
+
+// 正射影行列の作成
+Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
 
 // ビューポート行列の作成
 Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minD, float maxD);
