@@ -36,8 +36,8 @@ float Dot(const Vector3& v1, const Vector3& v2) {
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
-Vector3 Cross(const Vector3& pos1, const Vector3& pos2) {
-	return Vector3(pos1.y * pos2.z - pos1.z * pos2.y, pos1.z * pos2.x - pos1.x * pos2.z, pos1.x * pos2.y - pos1.y * pos2.x);
+Vector3 Cross(const Vector3& v1, const Vector3& v2) {
+	return Vector3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
 }
 
 Vector3 Max(Vector3 pos1, Vector3 pos2) {
@@ -46,6 +46,24 @@ Vector3 Max(Vector3 pos1, Vector3 pos2) {
 
 Vector3 Min(Vector3 pos1, Vector3 pos2) {
 	return Vector3(std::min(pos1.x, pos2.x), std::min(pos1.y, pos2.y), std::min(pos1.z, pos2.z));
+}
+
+Vector3 Project(const Vector3& v1, const Vector3& v2) {
+	float dot = Dot(v1, v2);
+	float lengthSquared = Dot(v2, v2);
+	if (lengthSquared == 0.0f) {
+		return Vector3(0.0f, 0.0f, 0.0f);
+	} else {
+		return Multiply(v2, dot / lengthSquared);
+	}
+}
+
+Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
+	Vector3 segmentVector = segment.diff;
+	Vector3 pointToSegmentStart = Subtract(point, segment.origin);
+	float t = Dot(pointToSegmentStart, segmentVector) / Dot(segmentVector, segmentVector);
+	t = std::max(0.0f, std::min(1.0f, t));
+	return Add(segment.origin, Multiply(segmentVector, t));
 }
 
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {

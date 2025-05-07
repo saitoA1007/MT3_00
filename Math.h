@@ -1,6 +1,7 @@
 #pragma once
 #include"Matrix4x4.h"
 #include"Vector3.h"
+#include"DrawObject3d.h"
 
 // 加算
 Vector3 Add(const Vector3& v1, const Vector3& v2);
@@ -19,14 +20,17 @@ Vector3 Normalize(const Vector3& v);
 
 // 内積
 float Dot(const Vector3& v1, const Vector3& v2);
-
 // 外積
-Vector3 Cross(const Vector3& pos1, const Vector3& pos2);
+Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
 // 最大値
 Vector3 Max(Vector3 pos1, Vector3 pos2);
 // 最小値
 Vector3 Min(Vector3 pos1, Vector3 pos2);
+
+Vector3 Project(const Vector3& v1, const Vector3& v2);
+
+Vector3 ClosestPoint(const Vector3& point,const Segment& segment);
 
 // 4x4行列の加法
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2);

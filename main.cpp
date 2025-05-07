@@ -1,14 +1,21 @@
 #include <Novice.h>
+#include<iostream>
 #include"Math.h"
 #include"DrawScreenPrintf.h"
+#include"Camera.h"
+#include"DrawObject3d.h"
+#include<imgui.h>
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_0_1";
+static const int kWindowWidth = 1280;
+static const int kWindowHeight = 720;
+
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_2_00";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// ライブラリの初期化
-	Novice::Initialize(kWindowTitle, 1280, 720);
+	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
 	char keys[256] = {0};
@@ -18,9 +25,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 宣言と初期化
 	//======================================================
 
-	Matrix4x4 orthographicMatrix = MakeOrthographicMatrix(-160.0f, 160.0f, 200.0f, 300.0f, 0.0f, 1000.0f);
-	Matrix4x4 perspectiveFovMatrix = MakePerspectiveFovMatrix(0.63f, 1.33f, 0.1f, 1000.0f);
-	Matrix4x4 viewportMatrix = MakeViewportMatrix(100.0f, 200.0f, 600.0f, 300.0f, 0.0f, 1.0f);
+	// カメラのクラス
+	Camera camera = Camera({ 1.0f,1.0f,1.0f }, {0.26f,0.0f,0.0f}, { 0.0f, 1.9f, -6.49f }, kWindowWidth, kWindowHeight);
+
+	// 点の座標
+	Segment segment{ {-2.0f,-1.0f,0.0f},{3.0f,2.0f,2.0f} };
+	Vector3 point{ -1.5f,0.6f,0.6f };
+
+	// 正射影ベクトル
+	Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
+	// 最近接点
+	Vector3 closestPoint = ClosestPoint(point, segment);
+
+	// 点を描画するための球の変数
+	Sphere pointSphere{ point,0.01f };
+	Sphere closestPointSphere{ closestPoint,0.01f };
+	 
+	// 線を描画するための変数
+	Vector3 start = Transform(Transform(segment.origin, camera.viewProjectionMatrixGetter()), camera.viewportMatrixGetter());
+	Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), camera.viewProjectionMatrixGetter()), camera.viewportMatrixGetter());
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -35,6 +58,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
+#ifdef _DEBUG
+		// カメラのデバック
+		camera.DrawCameraDebugWindow();
+
+		ImGui::Begin("DebugWindow");
+		ImGui::DragFloat3("point", &point.x, 0.01f);
+		ImGui::DragFloat3("segment_origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("segment_diff", &segment.diff.x, 0.01f);
+		ImGui::InputFloat3("project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputFloat3("closestPoint", &closestPoint.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::End();
+#endif 
+
+		// 正射影ベクトル
+		project = Project(Subtract(point, segment.origin), segment.diff);
+		// 最近接点
+		closestPoint = ClosestPoint(point, segment);
+		// 点の更新処理
+		pointSphere = { point,0.01f };
+		closestPointSphere = { closestPoint,0.01f };
+
+		// Lineの更新処理
+		start = Transform(Transform(segment.origin, camera.viewProjectionMatrixGetter()), camera.viewportMatrixGetter());
+		end = Transform(Transform(Add(segment.origin, segment.diff), camera.viewProjectionMatrixGetter()), camera.viewportMatrixGetter());
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -43,10 +91,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		MatrixScreenPrintf(0, 0, orthographicMatrix, "orthographicMatrix");
-		MatrixScreenPrintf(0, kRowHeight * 5, perspectiveFovMatrix, "perspectiveFovMatrix");
-		MatrixScreenPrintf(0, kRowHeight * 10, viewportMatrix, "viewportMatrix");
+		// グリッドを描画
+		DrawObject3D::DrawGrid(camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter());
 
+		// 線を描画
+		Novice::DrawLine(static_cast<int>(start.x), static_cast<int>(start.y), static_cast<int>(end.x), static_cast<int>(end.y), 0xFFFFFFFF);
+
+		// 点を描画
+		DrawObject3D::DrawSphere(pointSphere, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0xFF0000FF);
+		DrawObject3D::DrawSphere(closestPointSphere, camera.viewProjectionMatrixGetter(), camera.viewportMatrixGetter(), 0x000000FF);
+			
 		///
 		/// ↑描画処理ここまで
 		///
