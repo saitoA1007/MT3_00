@@ -91,18 +91,18 @@ void Camera::DrawCameraDebugWindow(InPut& input) {
 			if (input.mouse.mousePos.x != input.preMouse.mousePos.x) {
 				// 右にずらせば右に、左にずらせば左に移動する
 				if (input.mouse.mousePos.x >= input.preMouse.mousePos.x) {
-					cameraPos_.x += 0.02f;
-				} else {
 					cameraPos_.x -= 0.02f;
+				} else {
+					cameraPos_.x += 0.02f;
 				}
 			}
 			// Y軸に移動
 			if (input.mouse.mousePos.y != input.preMouse.mousePos.y) {
 				// 上にずらせば上に、下にずらせば下に移動する
 				if (input.mouse.mousePos.y <= input.preMouse.mousePos.y) {
-					cameraPos_.y += 0.02f;
-				} else {
 					cameraPos_.y -= 0.02f;
+				} else {
+					cameraPos_.y += 0.02f;
 				}
 			}
 		}
@@ -152,10 +152,10 @@ void Camera::DrawCameraDebugWindow(InPut& input) {
 
 #endif 
 
-Matrix4x4 Camera::viewProjectionMatrixGetter() {
+Matrix4x4 Camera::GetViewProjectionMatrix() {
 	return viewProjectionMatrix_;
 }
 
-Matrix4x4 Camera::viewportMatrixGetter() {
+Matrix4x4 Camera::GetViewportMatrix() {
 	return viewportMatrix_;
 }
