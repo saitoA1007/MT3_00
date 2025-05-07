@@ -12,7 +12,7 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_00";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_03";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -30,26 +30,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// カメラ
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 
-	// バネ
-	Spring spring = {};
-	spring.anchor = { 0.0f,0.0f,0.0f };
-	spring.naturalLength = 1.0f;
-	spring.stiffness = 100.0f;
-	spring.dampingCoefficient = 2.0f;
-	// スクリーン座標のバネのアンカー位置
-	Vector3 screenAnchorPos = Transform(Transform(spring.anchor, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
+	// 球
+	Sphere sphere = { {0.0f,0.2f,0.0f},0.05f };
+	// スクリーン座標に変換
+	Vector3 screenSphere = camera.TransScreen(sphere.center);
 
-	// ボール
-	Ball ball = {};
-	ball.pos = { 1.2f,0.0f,0.0f };
-	ball.mass = 2.0f;
-	ball.radius = 0.05f;
-	ball.color = 0x0000FFFF;
-	// スクリーン座標のボール位置
-	Vector3 screenBallPos = Transform(Transform(ball.pos, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
+	// 円錐振り子
+	ConicalPendulum conicalPendulum;
+	conicalPendulum.anchor = { 0.0f,1.0f,0.0f };
+	conicalPendulum.length = 0.8f;
+	conicalPendulum.halfApexAngle = 0.7f;
+	conicalPendulum.angle = 0.0f;
+	conicalPendulum.angularVelocity = 0.0f;
+	// 円錐振り子の原点
+	Vector3 screenOrigin = camera.TransScreen(conicalPendulum.anchor);
 
 	// デルタタイム
 	float deltaTime = 1.0f / 60.0f;
+
+	// 円錐振り子運動を実行する処理
+	bool isConicalPendulumStart = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -69,18 +69,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Begin("DebugWindow");
 		if (ImGui::Button("start")) {
-			ball.pos = { 1.2f,0.0f,0.0f };
+			if (isConicalPendulumStart) {
+				isConicalPendulumStart = false;
+			} else {
+				isConicalPendulumStart = true;
+			}
 		}
+		ImGui::DragFloat("Length", &conicalPendulum.length,0.01f);
+		ImGui::DragFloat("halfApexAngle", &conicalPendulum.halfApexAngle,0.01f);
 		ImGui::End();
 #endif 
 
-		// バネの動きの処理
-		simulateSpringMovement(spring, &ball, deltaTime);
+		// フラグがtrueの時、円錐振り子運動がスタートする
+		if (isConicalPendulumStart) {
+		
+			// 円錐振り子の処理
+			ConicalPendulumMotion(conicalPendulum, sphere.center, deltaTime);
 
-		// スクリーン座標のバネのアンカー位置の更新処理
-		screenAnchorPos = Transform(Transform(spring.anchor, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
-		// スクリーン座標のボール位置の更新処理
-		screenBallPos = Transform(Transform(ball.pos, camera.GetViewProjectionMatrix()), camera.GetViewportMatrix());
+			// 円錐振り子の原点
+			screenOrigin = camera.TransScreen(conicalPendulum.anchor);
+			// 球の中心座標をスクリーン座標に変換
+			screenSphere = camera.TransScreen(sphere.center);
+		}
 
 		///
 		/// ↑更新処理ここまで
@@ -93,12 +103,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.GetViewProjectionMatrix(), camera.GetViewportMatrix());
 
-		// バネのアンカーとボールを繋ぐ線の描画
-		Novice::DrawLine(static_cast<int>(screenAnchorPos.x), static_cast<int>(screenAnchorPos.y),
-			static_cast<int>(screenBallPos.x), static_cast<int>(screenBallPos.y), 0xFFFFFFFF);
+		// 円錐振り子の線を描画
+		Novice::DrawLine(static_cast<int>(screenOrigin.x), static_cast<int>(screenOrigin.y),
+			static_cast<int>(screenSphere.x), static_cast<int>(screenSphere.y), 0xFFFFFFFF);
 
-		// ボールの描画
-		DrawObject3D::DrawSphere({ball.pos,ball.radius}, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), ball.color);
+		// 球の描画
+		DrawObject3D::DrawSphere(sphere, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), 0xFFFFFFFF);
 
 		///
 		/// ↑描画処理ここまで
