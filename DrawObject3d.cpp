@@ -70,6 +70,50 @@ void DrawObject3D::DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4
 	}
 }
 
+void DrawObject3D::DrawLine(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	// 始点、終点を求める処理
+	Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+	Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+	// 線を描画
+	Novice::DrawLine(static_cast<int>(start.x), static_cast<int>(start.y), static_cast<int>(end.x), static_cast<int>(end.y), color);
+}
+
+void DrawObject3D::DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 center = Multiply(plane.normal, plane.distance); // 中心点を決める
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = Normalize(Perpendicular(plane.normal)); // 法線と垂直なベクトルを求める
+	perpendiculars[1] = { -perpendiculars[0].x,-perpendiculars[0].y,-perpendiculars[0].z }; // 逆ベクトルを求める
+	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]); // 法線とのクロス積を求める
+	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z }; // 逆ベクトルを求める
+	// 各ベクトルに中心点にそれぞれ定数倍して足し、頂点を作る
+	Vector3 points[4];
+	for (int32_t i = 0; i < 4; ++i) {
+		Vector3 extend = Multiply(perpendiculars[i],2.0f);
+		Vector3 point = center + extend;
+		points[i] = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+
+	//// pointsを結び矩形を描画
+	Novice::DrawLine(static_cast<int>(points[0].x), static_cast<int>(points[0].y), static_cast<int>(points[2].x), static_cast<int>(points[2].y), color);
+	Novice::DrawLine(static_cast<int>(points[1].x), static_cast<int>(points[1].y), static_cast<int>(points[2].x), static_cast<int>(points[2].y), color);
+	Novice::DrawLine(static_cast<int>(points[1].x), static_cast<int>(points[1].y), static_cast<int>(points[3].x), static_cast<int>(points[3].y), color);
+	Novice::DrawLine(static_cast<int>(points[3].x), static_cast<int>(points[3].y), static_cast<int>(points[0].x), static_cast<int>(points[0].y), color);
+}
+
+void DrawObject3D::DrawTriangle(Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+
+	// スクリーン座標に変換
+	Triangle ScreenTriangle;
+	ScreenTriangle.vertices[0] = Transform(Transform(triangle.vertices[0], viewProjectionMatrix), viewportMatrix);
+	ScreenTriangle.vertices[1] = Transform(Transform(triangle.vertices[1], viewProjectionMatrix), viewportMatrix);
+	ScreenTriangle.vertices[2] = Transform(Transform(triangle.vertices[2], viewProjectionMatrix), viewportMatrix);
+
+	// 三角形の描画
+	Novice::DrawTriangle(static_cast<int>(ScreenTriangle.vertices[0].x), static_cast<int>(ScreenTriangle.vertices[0].y),
+		static_cast<int>(ScreenTriangle.vertices[1].x), static_cast<int>(ScreenTriangle.vertices[1].y),
+		static_cast<int>(ScreenTriangle.vertices[2].x), static_cast<int>(ScreenTriangle.vertices[2].y), color, kFillModeWireFrame);
+}
+
 void DrawObject3D::DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 
 	// 分割数
@@ -133,7 +177,7 @@ void DrawObject3D::DrawAABB(const AABB aabb, const Matrix4x4& viewProjectionMatr
 	Box screenBox;
 
 	// スクリーン座標に変換
-	for (int i = 0; i < 8; ++i) {
+	for (uint32_t i = 0; i < 8; ++i) {
 		ndcBox.vertices[i] = Transform(box.vertices[i], viewProjectionMatrix);
 		screenBox.vertices[i] = Transform(ndcBox.vertices[i], viewportMatrix);
 	}
@@ -152,5 +196,39 @@ void DrawObject3D::DrawAABB(const AABB aabb, const Matrix4x4& viewProjectionMatr
 
 		// 線を描画
 		Novice::DrawLine(static_cast<int>(startPos.x), static_cast<int>(startPos.y), static_cast<int>(endPos.x), static_cast<int>(endPos.y), color);
+	}
+}
+
+void DrawObject3D::DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+
+	// 分割数
+	const uint32_t kSubdivision = 32;
+
+	// ベジェ曲線の点を求める
+	Vector3 bezier0[kSubdivision]{};
+	Vector3 bezier1[kSubdivision]{};
+
+	// ベジェ曲線を使い線を求める処理
+	for (uint32_t index = 0; index < kSubdivision; ++index) {
+		float t0 = static_cast<float>(index) / static_cast<float>(kSubdivision);
+		float t1 = (1.0f + static_cast<float>(index)) / static_cast<float>(kSubdivision);
+		// t0とt1との制御点を使ってベジェ曲線上の点を求める
+		bezier0[index] = Bezier(controlPoint0, controlPoint1, controlPoint2, t0);
+		bezier1[index] = Bezier(controlPoint0, controlPoint1, controlPoint2, t1);
+	}
+
+	// スクリーン座標に変換
+	Vector3 ScreenBezier0[kSubdivision]{};
+	Vector3 ScreenBezier1[kSubdivision]{};
+	for (uint32_t i = 0; i < kSubdivision; ++i) {
+		ScreenBezier0[i] = Transform(Transform(bezier0[i], viewProjectionMatrix), viewportMatrix);
+		ScreenBezier1[i] = Transform(Transform(bezier1[i], viewProjectionMatrix), viewportMatrix);
+	}
+
+	//// 線の描画
+	for (int i = 0; i < kSubdivision; ++i) {
+		Novice::DrawLine(
+			static_cast<int>(ScreenBezier0[i].x), static_cast<int>(ScreenBezier0[i].y),
+			static_cast<int>(ScreenBezier1[i].x), static_cast<int>(ScreenBezier1[i].y), color);
 	}
 }

@@ -2,6 +2,7 @@
 #include"Vector3.h"
 #include"Matrix4x4.h"
 #include <stdint.h>
+#include"InPutProcess.h"
 
 class Camera {
 public:
@@ -39,7 +40,7 @@ public:
 #ifdef _DEBUG
 
 	// カメラのデバック
-	void DrawCameraDebugWindow();
+	void DrawCameraDebugWindow(InPut& input);
 
 #endif 
 
@@ -47,10 +48,13 @@ private:
 
 	// ワールド座標上のカメラ座標
 	Vector3 cameraPos_;
+	Matrix4x4 transMatrix_;
 	// カメラの角度
 	Vector3 cameraRotate_;
+	Matrix4x4 rotateMatrix_;
 	// カメラの拡縮
 	Vector3 cameraScale_;
+	Matrix4x4 scaleMatrix_;
 	// カメラのワールド座標上の行列
 	Matrix4x4 cameraWorldMatrix_;
 	// ビュー行列

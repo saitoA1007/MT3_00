@@ -38,6 +38,12 @@
     <ClCompile Include="DrawScreenPrintf.cpp">
       <Filter>ソースファイル</Filter>
     </ClCompile>
+    <ClCompile Include="InPutProcess.cpp">
+      <Filter>ソースファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision.cpp">
+      <Filter>ソースファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -133,6 +139,14 @@
       <Filter>ヘッダファイル</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
+      <Filter>ヘッダファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Vector2.h" />
+    <ClInclude Include="Collision.h">
+      <Filter>ヘッダファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="InPutProcess.h">
       <Filter>ヘッダファイル</Filter>
     </ClInclude>
   </ItemGroup>
