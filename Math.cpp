@@ -48,6 +48,10 @@ Vector3 Min(Vector3 pos1, Vector3 pos2) {
 	return Vector3(std::min(pos1.x, pos2.x), std::min(pos1.y, pos2.y), std::min(pos1.z, pos2.z));
 }
 
+Vector3 Reflect(const Vector3& input, const Vector3& normal) {
+	return Subtract(input, Multiply(normal, 2.0f * Dot(input, normal)));
+}
+
 Vector3 Project(const Vector3& v1, const Vector3& v2) {
 	float dot = Dot(v1, v2);
 	float lengthSquared = Dot(v2, v2);

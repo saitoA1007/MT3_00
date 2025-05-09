@@ -28,6 +28,9 @@ Vector3 Max(Vector3 pos1, Vector3 pos2);
 // 最小値
 Vector3 Min(Vector3 pos1, Vector3 pos2);
 
+// 反射ベクトル
+Vector3 Reflect(const Vector3& input, const Vector3& normal);
+
 // 正射影ベクトル
 Vector3 Project(const Vector3& v1, const Vector3& v2);
 // 最近接点

@@ -12,13 +12,13 @@
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
 
-const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_4_03";
+const char kWindowTitle[] = "LE2A_05_サイトウ_アオイ_MT3_04_04";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// ライブラリの初期化
-	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
+	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight); 
 
 	//======================================================
 	// 宣言と初期化
@@ -29,27 +29,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// カメラ
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
+	
+	// 平面
+	Plane plane;
+	plane.normal = Normalize({ -0.2f,0.9f,-0.3f });
+	plane.distance = 0.0f;
 
-	// 球
-	Sphere sphere = { {0.0f,0.2f,0.0f},0.05f };
-	// スクリーン座標に変換
-	Vector3 screenSphere = camera.TransScreen(sphere.center);
-
-	// 円錐振り子
-	ConicalPendulum conicalPendulum;
-	conicalPendulum.anchor = { 0.0f,1.0f,0.0f };
-	conicalPendulum.length = 0.8f;
-	conicalPendulum.halfApexAngle = 0.7f;
-	conicalPendulum.angle = 0.0f;
-	conicalPendulum.angularVelocity = 0.0f;
-	// 円錐振り子の原点
-	Vector3 screenOrigin = camera.TransScreen(conicalPendulum.anchor);
+	// ボール
+	Ball ball{};
+	ball.pos = { 0.8f,1.2f,0.3f };
+	ball.mass = 2.0f;
+	ball.radius = 0.05f;
+	ball.color = 0xFFFFFFFF;
+	ball.acceleration = { 0.0f,-9.8f,0.0f };
+	// 反発係数
+	Vector3 e = {0.0f,0.8f,0.0f};
 
 	// デルタタイム
 	float deltaTime = 1.0f / 60.0f;
 
 	// 円錐振り子運動を実行する処理
-	bool isConicalPendulumStart = false;
+	bool isStart = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -69,27 +69,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Begin("DebugWindow");
 		if (ImGui::Button("start")) {
-			if (isConicalPendulumStart) {
-				isConicalPendulumStart = false;
+			if (isStart) {
+				isStart = false;
 			} else {
-				isConicalPendulumStart = true;
+				isStart = true;
 			}
 		}
-		ImGui::DragFloat("Length", &conicalPendulum.length,0.01f);
-		ImGui::DragFloat("halfApexAngle", &conicalPendulum.halfApexAngle,0.01f);
+		ImGui::DragFloat3("ball.pos", &ball.pos.x, 0.01f);
+		if (ImGui::Button("Reset")) {
+			ball.pos = { 0.8f,1.2f,0.3f };
+			ball.velocity = { 0.0f,0.0f,0.0f };
+		}
 		ImGui::End();
 #endif 
 
 		// フラグがtrueの時、円錐振り子運動がスタートする
-		if (isConicalPendulumStart) {
-		
-			// 円錐振り子の処理
-			ConicalPendulumMotion(conicalPendulum, sphere.center, deltaTime);
+		if (isStart) {
 
-			// 円錐振り子の原点
-			screenOrigin = camera.TransScreen(conicalPendulum.anchor);
-			// 球の中心座標をスクリーン座標に変換
-			screenSphere = camera.TransScreen(sphere.center);
+			ball.velocity += ball.acceleration * deltaTime;
+			ball.pos += ball.velocity * deltaTime;
+			if (IsSpherePlaneCollision({ ball.pos,ball.radius }, plane)) {
+				Vector3 reflected = Reflect(ball.velocity, plane.normal);
+				Vector3 projectToNormal = Project(reflected, plane.normal);
+				Vector3 movingDirection = reflected - projectToNormal;
+				ball.velocity = projectToNormal * e + movingDirection;
+			}
 		}
 
 		///
@@ -103,12 +107,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.GetViewProjectionMatrix(), camera.GetViewportMatrix());
 
-		// 円錐振り子の線を描画
-		Novice::DrawLine(static_cast<int>(screenOrigin.x), static_cast<int>(screenOrigin.y),
-			static_cast<int>(screenSphere.x), static_cast<int>(screenSphere.y), 0xFFFFFFFF);
+		// 平面を描画
+		DrawObject3D::DrawPlane(plane, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), 0xFFFFFFFF);
 
 		// 球の描画
-		DrawObject3D::DrawSphere(sphere, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), 0xFFFFFFFF);
+		DrawObject3D::DrawSphere({ball.pos,ball.radius}, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), 0xFFFFFFFF);
 
 		///
 		/// ↑描画処理ここまで
