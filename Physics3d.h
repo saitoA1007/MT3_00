@@ -1,5 +1,6 @@
 #pragma once
 #include"Vector3.h"
+#include"DrawObject3d.h"
 
 struct Spring {
 	// アンカー。固定された端の位置
@@ -32,6 +33,12 @@ struct ConicalPendulum {
 	float halfApexAngle;   // 円錐の頂角の半分
 	float angle;           // 現在の角度
 	float angularVelocity; // 角速度ω
+};
+
+// カプセルの構造体
+struct Capsule {
+	Segment segment;
+	float radius;
 };
 
 // バネの動きの処理
