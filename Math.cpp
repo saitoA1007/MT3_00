@@ -161,6 +161,35 @@ Matrix4x4 MakeIdentity4x4() {
 	return identity;
 }
 
+Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to) {
+
+	// 角
+	float cos = Dot(from,to);
+	float sin = Length(Cross(from, to));
+	float t = 1.0f - cos;
+
+	// 軸
+	Vector3 axis = Normalize(Cross(from, to));
+
+	// 真逆の場合
+	if (cos <= -0.9999f) {
+
+		if (from.x != 0.0f || from.y != 0.0f) {
+			axis = Normalize({ from.y,-from.x,0.0f });
+		} else if (from.x != 0.0f || from.z != 0.0f) {
+			axis = Normalize({ from.z,0.0f,-from.x });
+		}
+	}
+
+	Matrix4x4 result = {
+		axis.x * axis.x * t + cos, axis.x * axis.y * t + axis.z * sin, axis.x * axis.z * t - axis.y * sin, 0.0f,
+		axis.x * axis.y * t - axis.z * sin, axis.y * axis.y * t + cos, axis.y * axis.z * t + axis.x * sin, 0.0f,
+		axis.x * axis.z * t + axis.y * sin, axis.y * axis.z * t - axis.x * sin, axis.z * axis.z * t + cos, 0.0f,
+		0.0f,0.0f,0.0f,1.0f,
+	};
+	return result;
+}
+
 Matrix4x4 MakeRotateAxisAngle(const Vector3& axis, float angle) {
 
 	float cos = std::cosf(angle);

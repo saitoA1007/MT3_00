@@ -61,7 +61,10 @@ Matrix4x4 Transpose(const Matrix4x4& m);
 // 4x4単位行列
 Matrix4x4 MakeIdentity4x4();
 
-// 4x4行列の任意軸回転行列
+// ある方向からある方向へ向ける回転行列の作成
+Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to);
+
+// 4x4行列の任意軸回転行列の作成
 Matrix4x4 MakeRotateAxisAngle(const Vector3& axis, float angle);
 
 // 4xx4のX軸の回転行列を作成
