@@ -30,26 +30,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// カメラ
 	Camera camera = Camera({ 1.0f,1.0f,1.0f }, { 0.26f,0.0f,0.0f }, { 0.0f, 0.0f, -6.49f }, kWindowWidth, kWindowHeight);
 	
-	// 平面
-	Plane plane;
-	plane.normal = Normalize({ -0.2f,0.9f,-0.3f });
-	plane.distance = 0.0f;
-
-	// ボール
-	Ball ball{};
-	ball.pos = { 0.8f,1.2f,0.3f };
-	ball.mass = 2.0f;
-	ball.radius = 0.05f;
-	ball.color = 0xFFFFFFFF;
-	ball.acceleration = { 0.0f,-9.8f,0.0f };
-	// 反発係数
-	Vector3 e = {0.0f,0.8f,0.0f};
-
-	// デルタタイム
-	float deltaTime = 1.0f / 60.0f;
-
-	// 円錐振り子運動を実行する処理
-	bool isStart = false;
+	// 任意軸回転行列
+	Vector3 axis = Normalize({ 1.0f,1.0f,1.0f });
+	float angle = 0.44f;
+	Matrix4x4 rotateMatrix = MakeRotateAxisAngle(axis, angle);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -68,33 +52,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		camera.DrawCameraDebugWindow(input);
 
 		ImGui::Begin("DebugWindow");
-		if (ImGui::Button("start")) {
-			if (isStart) {
-				isStart = false;
-			} else {
-				isStart = true;
-			}
-		}
-		ImGui::DragFloat3("ball.pos", &ball.pos.x, 0.01f);
-		if (ImGui::Button("Reset")) {
-			ball.pos = { 0.8f,1.2f,0.3f };
-			ball.velocity = { 0.0f,0.0f,0.0f };
-		}
 		ImGui::End();
 #endif 
-
-		// フラグがtrueの時、円錐振り子運動がスタートする
-		if (isStart) {
-
-			ball.velocity += ball.acceleration * deltaTime;
-			ball.pos += ball.velocity * deltaTime;
-			if (IsSpherePlaneCollision({ ball.pos,ball.radius }, plane)) {
-				Vector3 reflected = Reflect(ball.velocity, plane.normal);
-				Vector3 projectToNormal = Project(reflected, plane.normal);
-				Vector3 movingDirection = reflected - projectToNormal;
-				ball.velocity = projectToNormal * e + movingDirection;
-			}
-		}
 
 		///
 		/// ↑更新処理ここまで
@@ -107,11 +66,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawObject3D::DrawGrid(camera.GetViewProjectionMatrix(), camera.GetViewportMatrix());
 
-		// 平面を描画
-		DrawObject3D::DrawPlane(plane, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), 0xFFFFFFFF);
-
-		// 球の描画
-		DrawObject3D::DrawSphere({ball.pos,ball.radius}, camera.GetViewProjectionMatrix(), camera.GetViewportMatrix(), 0xFFFFFFFF);
+		// 任意軸回転行列を表示
+		MatrixScreenPrintf(0, 0, rotateMatrix, "rotateMatrix");
 
 		///
 		/// ↑描画処理ここまで
