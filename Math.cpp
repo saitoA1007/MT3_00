@@ -71,6 +71,27 @@ Matrix4x4 MakeRotateMatrix(const Quaternion& q) {
 	return result;
 }
 
+float Dot(const Quaternion& a, const Quaternion& b) {
+	return  a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t) {
+	Quaternion q1Copy = q1;
+	float dot = Dot(q0, q1);
+	// 四元数の符号が逆だと最短経路で補間されないので反転
+	if (dot < 0.0f) {
+		dot = -dot;
+		q1Copy = -q1;
+	}
+	// なす角
+	float theta = std::acosf(dot);
+	float sinTheta = std::sinf(theta);
+	// 補間係数を求める
+	float scale0 = std::sinf((1.0f - t) * theta) / sinTheta;
+	float scale1 = std::sinf(t * theta) / sinTheta;
+	return scale0 * q0 + scale1 * q1Copy;
+}
+
 Vector3 Add(const Vector3& v1, const Vector3& v2) {
 	return Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 }

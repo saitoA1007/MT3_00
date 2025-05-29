@@ -8,6 +8,11 @@ struct Quaternion {
 	float y;
 	float z;
 	float w;
+
+	Quaternion operator+(const Quaternion& other) { return { x + other.x, y + other.y, z + other.z, w + other.w }; }
+	Quaternion operator*(const float& other) { return { x * other, y * other, z * other, w * other }; }
+	friend Quaternion operator*(float other, const Quaternion& q) { return { q.x * other, q.y * other, q.z * other, q.w * other }; }
+	Quaternion operator-() const { return { -x, -y, -z,-w }; }
 };
 
 // Quaternionの積
@@ -28,6 +33,10 @@ Quaternion MakeRotateAxisAngleQuaternion(const Vector3& axis, float angle);
 Vector3 RotateVector(const Vector3& vector, const Quaternion& quaternion);
 // Quaternionから回転行列を求める
 Matrix4x4 MakeRotateMatrix(const Quaternion& q);
+// 球面線形補間
+Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);
+// 内積
+float Dot(const Quaternion& a, const Quaternion& b);
 
 // 加算
 Vector3 Add(const Vector3& v1, const Vector3& v2);
