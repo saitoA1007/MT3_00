@@ -45,6 +45,32 @@ Quaternion Inverse(const Quaternion& quaternion) {
 	return { conjugate.x * invNorm, conjugate.y * invNorm,conjugate.z * invNorm,conjugate.w * invNorm };
 }
 
+Quaternion MakeRotateAxisAngleQuaternion(const Vector3& axis, float angle) {
+	float halfAngle = angle / 2.0f;
+	float sin = std::sin(halfAngle);
+	float cos = std::cos(halfAngle);
+	return { axis.x * sin, axis.y * sin, axis.z * sin, cos};
+}
+
+Vector3 RotateVector(const Vector3& vector, const Quaternion& quaternion) {
+	// 四元数とベクトルの回転（q * v * q^-1）
+	Quaternion r = { vector.x, vector.y, vector.z,0.0f };
+	// quaternionの共役を求める
+	Quaternion qConj = Conjugate(quaternion);
+	Quaternion rotated = Multiply(Multiply(quaternion, r), qConj);
+	return { rotated.x, rotated.y, rotated.z };
+}
+
+Matrix4x4 MakeRotateMatrix(const Quaternion& q) {
+	Matrix4x4 result = {
+		q.w* q.w + q.x * q.x - q.y * q.y - q.z * q.z, 2.0f * (q.x * q.y + q.w * q.z), 2.0f * (q.x * q.z - q.w * q.y), 0.0f,
+		2.0f * (q.x * q.y - q.w * q.z), q.w* q.w - q.x * q.x + q.y * q.y - q.z * q.z, 2.0f * (q.y * q.z + q.w * q.x), 0.0f,
+		2.0f * (q.x * q.z + q.w * q.y), 2.0f * (q.y * q.z - q.w * q.x), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z, 0.0f,
+		0.0f,0.0f,0.0f,1.0f,
+	};
+	return result;
+}
+
 Vector3 Add(const Vector3& v1, const Vector3& v2) {
 	return Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 }
