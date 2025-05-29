@@ -3,6 +3,26 @@
 #include"Vector3.h"
 #include"Geometry.h"
 
+struct Quaternion {
+	float x;
+	float y;
+	float z;
+	float w;
+};
+
+// Quaternionの積
+Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs);
+// 単位Quaternionを返す
+Quaternion IdentityQuaternion();
+// 共役Quaternionを返す
+Quaternion Conjugate(const Quaternion& quaternion);
+// Quaernionのnormを返す
+float Norm(const Quaternion& quaternion);
+// 正規化したQuaternionを返す
+Quaternion Normalize(const Quaternion& quaternion);
+// 逆Quaternionを返す
+Quaternion Inverse(const Quaternion& quaternion);
+
 // 加算
 Vector3 Add(const Vector3& v1, const Vector3& v2);
 // 減算

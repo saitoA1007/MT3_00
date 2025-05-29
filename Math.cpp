@@ -3,6 +3,48 @@
 #include<cassert>
 #include <algorithm> 
 
+Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs) {
+
+	Quaternion result;
+	result.w = lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z;
+	result.x = lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y;
+	result.y = lhs.w * rhs.y - lhs.x * rhs.z + lhs.y * rhs.w + lhs.z * rhs.x;
+	result.z = lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w;
+	return result;
+}
+
+Quaternion IdentityQuaternion() {
+	return { 0.0f, 0.0f, 0.0f, 1.0f };
+}
+
+Quaternion Conjugate(const Quaternion& quaternion) {
+	return { -quaternion.x, -quaternion.y, -quaternion.z, quaternion.w };
+}
+
+float Norm(const Quaternion& quaternion) {
+	return std::sqrt(quaternion.x * quaternion.x + quaternion.y * quaternion.y + quaternion.z * quaternion.z + quaternion.w * quaternion.w);
+}
+
+Quaternion Normalize(const Quaternion& quaternion) {
+	float norm = Norm(quaternion);
+	// 0除算を避けるため単位Quaternionを返す
+	if (norm == 0.0f) {
+		return IdentityQuaternion();
+	}
+	return { quaternion.x / norm, quaternion.y / norm, quaternion.z / norm, quaternion.w / norm};
+}
+
+Quaternion Inverse(const Quaternion& quaternion) {
+	float norm = Norm(quaternion);
+	// 0除算を避けるため単位Quaternionを返す
+	if (norm == 0.0f) {
+		return IdentityQuaternion();
+	}
+	Quaternion conjugate = Conjugate(quaternion);
+	float invNorm = 1.0f / (norm * norm);
+	return { conjugate.x * invNorm, conjugate.y * invNorm,conjugate.z * invNorm,conjugate.w * invNorm };
+}
+
 Vector3 Add(const Vector3& v1, const Vector3& v2) {
 	return Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 }
@@ -175,9 +217,9 @@ Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to) {
 	if (cos <= -0.9999f) {
 
 		if (from.x != 0.0f || from.y != 0.0f) {
-			axis = Normalize({ from.y,-from.x,0.0f });
+			axis = Normalize(Vector3( from.y,-from.x,0.0f));
 		} else if (from.x != 0.0f || from.z != 0.0f) {
-			axis = Normalize({ from.z,0.0f,-from.x });
+			axis = Normalize(Vector3( from.z,0.0f,-from.x ));
 		}
 	}
 
